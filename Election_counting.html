@@ -1,133 +1,75 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靜心學生會開票系統</title>
+    <title>測試開票系統</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
-        .candidate-card { border: 2px solid #333; padding: 20px; margin: 10px; display: inline-block; width: 250px; border-radius: 15px; background: #1e1e1e; }
-        .vote-count { font-size: 4em; color: #f1c40f; font-weight: bold; }
-        .admin-section { display: none; background: #333; padding: 20px; margin-top: 50px; border-radius: 10px; }
-        .btn { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; margin: 5px; }
-        .btn-add { background: #007bff; color: white; }
-        .btn-end { background: #e74c3c; color: white; }
-        .winner-tag { display: none; color: #e74c3c; font-weight: bold; font-size: 1.5em; border: 2px solid #e74c3c; padding: 5px; transform: rotate(-10deg); }
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        .box { border: 2px solid #555; padding: 20px; margin: 20px auto; width: 300px; border-radius: 10px; }
+        #debug-info { color: #ff4d4d; border: 1px solid red; padding: 10px; margin: 10px; font-size: 14px; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1>2026 實時開票實況</h1>
-    <div id="loading">正在連線至 Firebase 資料庫...</div>
+    <h1>靜心學生會開票系統 (測試版)</h1>
+    <p>如果你看到這行字，代表 GitHub 已經更新成功了！</p>
+    
+    <div id="debug-info">正在檢查資料庫連線...</div>
 
-    <div id="display-area">
-        <div class="candidate-card" id="card-c1">
-            <h2 id="name-c1">候選人 1</h2>
-            <div class="vote-count" id="count-c1">0</div>
-            <div id="rate-c1">得票率: 0%</div>
-            <div class="winner-tag" id="winner-c1">當選</div>
-        </div>
-        <div class="candidate-card" id="card-c2">
-            <h2 id="name-c2">候選人 2</h2>
-            <div class="vote-count" id="count-c2">0</div>
-            <div id="rate-c2">得票率: 0%</div>
-            <div class="winner-tag" id="winner-c2">當選</div>
-        </div>
+    <div class="box">
+        <h2 id="n1">載入中...</h2>
+        <div style="font-size: 3em;" id="v1">0</div>
+        <button onclick="add('c1')">+1 票</button>
     </div>
 
-    <div id="admin-area" class="admin-section">
-        <h3>管理員後台</h3>
-        <button class="btn btn-add" onclick="addVote('c1')">候選人 1 +1</button>
-        <button class="btn btn-add" onclick="addVote('c2')">候選人 2 +1</button>
-        <br><br>
-        <button class="btn btn-end" onclick="endVoting()">結束開票</button>
-        <button class="btn" style="background:#666; color:white;" onclick="resetData()">數據歸零</button>
+    <div class="box">
+        <h2 id="n2">載入中...</h2>
+        <div style="font-size: 3em;" id="v2">0</div>
+        <button onclick="add('c2')">+1 票</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 這是你提供的正確 Config
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyC_SZW-5X9_4dIqF5-j4iBaJm9Y18gJUv0",
             authDomain: "cssc-voting-election-counting.firebaseapp.com",
             databaseURL: "https://cssc-voting-election-counting-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cssc-voting-election-counting",
-            storageBucket: "cssc-voting-election-counting.firebasestorage.app",
-            messagingSenderId: "264807250344",
             appId: "1:264807250344:web:ae89ea0a9527263369459d"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const voteRef = ref(db, 'votes');
+        try {
+            const app = initializeApp(config);
+            const db = getDatabase(app);
+            const vRef = ref(db, 'votes');
 
-        // 偵測是否為後台模式
-        if (window.location.search.includes('mode=admin')) {
-            document.getElementById('admin-area').style.display = 'block';
-        }
-
-        // 監聽數據
-        onValue(voteRef, (snapshot) => {
-            const data = snapshot.val();
-            document.getElementById('loading').style.display = 'none';
-            
-            if (!data) {
-                // 如果資料庫是空的，初始化它
-                set(voteRef, {
-                    c1: { name: "候選人 1", count: 0 },
-                    c2: { name: "候選人 2", count: 0 },
-                    isFinished: false
-                });
-                return;
-            }
-
-            // 更新畫面
-            const total = data.c1.count + data.c2.count;
-            ['c1', 'c2'].forEach(id => {
-                const count = data[id].count;
-                const rate = total === 0 ? 0 : (count / total * 100).toFixed(1);
-                document.getElementById(`count-${id}`).innerText = count;
-                document.getElementById(`rate-${id}`).innerText = `得票率: ${rate}%`;
-                
-                // 當選標記邏輯
-                document.getElementById(`winner-${id}`).style.display = 'none';
-                if (data.isFinished) {
-                    const otherId = id === 'c1' ? 'c2' : 'c1';
-                    if (data[id].count > data[otherId].count) {
-                        document.getElementById(`winner-${id}`).style.display = 'block';
-                    }
+            onValue(vRef, (s) => {
+                const d = s.val();
+                if (!d) {
+                    document.getElementById('debug-info').innerText = "資料庫是空的，正在嘗試寫入初始數據...";
+                    set(vRef, { c1: {name:"候選人 A", count:0}, c2: {name:"候選人 B", count:0}, isFinished: false });
+                } else {
+                    document.getElementById('debug-info').innerText = "連線成功！數據同步中";
+                    document.getElementById('n1').innerText = d.c1.name;
+                    document.getElementById('v1').innerText = d.c1.count;
+                    document.getElementById('n2').innerText = d.c2.name;
+                    document.getElementById('v2').innerText = d.c2.count;
+                    window.currentD = d;
                 }
+            }, (e) => {
+                document.getElementById('debug-info').innerText = "連線失敗: " + e.message;
             });
 
-            // 存為全域變數供按鈕使用
-            window.currentVotes = data;
-        });
-
-        // 按鈕功能
-        window.addVote = (id) => {
-            if (window.currentVotes.isFinished) return alert("已結束");
-            window.currentVotes[id].count++;
-            update(voteRef, window.currentVotes);
-        };
-
-        window.endVoting = () => {
-            if (confirm("確定結束並顯示當選人？")) {
-                window.currentVotes.isFinished = true;
-                update(voteRef, window.currentVotes);
-            }
-        };
-
-        window.resetData = () => {
-            if (confirm("確定全部歸零？")) {
-                set(voteRef, {
-                    c1: { name: "候選人 1", count: 0 },
-                    c2: { name: "候選人 2", count: 0 },
-                    isFinished: false
-                });
-            }
-        };
+            window.add = (id) => {
+                window.currentD[id].count++;
+                update(vRef, window.currentD);
+            };
+        } catch (err) {
+            document.getElementById('debug-info').innerText = "啟動錯誤: " + err.message;
+        }
     </script>
 </body>
 </html>
