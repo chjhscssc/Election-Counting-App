@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>開票系統測試</title>
+</head>
+<body style="background: #121212; color: white; text-align: center; padding-top: 50px;">
+
+    <h1 style="color: red; border: 5px solid white; padding: 20px;">
+        測試成功！GitHub 已經抓到 index.html 了
+    </h1>
+
+    <div id="main-content">
+        <h2>正在與 Firebase 同步數據...</h2>
+        <p>如果下方一直沒出現票數，請檢查 Firebase 設定。</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_SZW-5X9_4dIqF5-j4iBaJm9Y18gJUv0",
+            authDomain: "cssc-voting-election-counting.firebaseapp.com",
+            databaseURL: "https://cssc-voting-election-counting-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cssc-voting-election-counting",
+            appId: "1:264807250344:web:ae89ea0a9527263369459d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        // 簡單顯示測試
+        onValue(ref(db, 'votes'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('main-content').innerHTML = `
+                    <div style="font-size: 50px; color: yellow;">
+                        ${data.c1.name}: ${data.c1.count} 票
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
