@@ -2,22 +2,42 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>開票系統測試</title>
+    <title>靜心學生會開票系統</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
+        .card { border: 2px solid #333; padding: 20px; margin: 10px; display: inline-block; width: 250px; border-radius: 15px; background: #1e1e1e; }
+        .votes { font-size: 5em; color: #f1c40f; font-weight: bold; margin: 10px 0; }
+        .admin-box { display: none; background: #2c3e50; padding: 20px; margin-top: 50px; border-radius: 10px; }
+        button { padding: 15px 25px; font-size: 18px; cursor: pointer; border: none; border-radius: 8px; margin: 10px; background: #3498db; color: white; }
+    </style>
 </head>
-<body style="background: #121212; color: white; text-align: center; padding-top: 50px;">
+<body>
 
-    <h1 style="color: red; border: 5px solid white; padding: 20px;">
-        測試成功！GitHub 已經抓到 index.html 了
-    </h1>
+    <h1>2026 實時開票實況</h1>
+    <div id="status">正在同步 Firebase 資料...</div>
 
-    <div id="main-content">
-        <h2>正在與 Firebase 同步數據...</h2>
-        <p>如果下方一直沒出現票數，請檢查 Firebase 設定。</p>
+    <div id="display-ui">
+        <div class="card">
+            <h2 id="n1">候選人 1</h2>
+            <div class="votes" id="v1">0</div>
+        </div>
+        <div class="card">
+            <h2 id="n2">候選人 2</h2>
+            <div class="votes" id="v2">0</div>
+        </div>
+    </div>
+
+    <div id="admin-ui" class="admin-box">
+        <h3>管理員後台控制</h3>
+        <button onclick="add('c1')">候選人 1 +1 票</button>
+        <button onclick="add('c2')">候選人 2 +1 票</button>
+        <br>
+        <button style="background:#e74c3c" onclick="reset()">數據歸零重置</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC_SZW-5X9_4dIqF5-j4iBaJm9Y18gJUv0",
@@ -29,18 +49,44 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        // 簡單顯示測試
-        onValue(ref(db, 'votes'), (snapshot) => {
+        const voteRef = ref(db, 'votes');
+
+        // 檢查網址是否有管理員模式
+        if (window.location.search.includes('mode=admin')) {
+            document.getElementById('admin-ui').style.display = 'block';
+        }
+
+        let currentData = {
+            c1: { name: "候選人 1", count: 0 },
+            c2: { name: "候選人 2", count: 0 }
+        };
+
+        onValue(voteRef, (snapshot) => {
             const data = snapshot.val();
+            document.getElementById('status').style.display = 'none';
             if (data) {
-                document.getElementById('main-content').innerHTML = `
-                    <div style="font-size: 50px; color: yellow;">
-                        ${data.c1.name}: ${data.c1.count} 票
-                    </div>
-                `;
+                currentData = data;
+                document.getElementById('v1').innerText = data.c1.count;
+                document.getElementById('v2').innerText = data.c2.count;
+            } else {
+                // 資料庫是空的就初始化
+                set(voteRef, currentData);
             }
         });
+
+        window.add = (id) => {
+            currentData[id].count++;
+            update(voteRef, currentData);
+        };
+
+        window.reset = () => {
+            if (confirm("確定要將票數歸零嗎？")) {
+                set(voteRef, {
+                    c1: { name: "候選人 1", count: 0 },
+                    c2: { name: "候選人 2", count: 0 }
+                });
+            }
+        };
     </script>
 </body>
 </html>
