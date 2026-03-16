@@ -8,8 +8,8 @@
         :root { --primary-color: #e74c3c; --bg-color: #121212; --card-bg: #1e1e1e; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); color: white; text-align: center; margin: 0; padding: 20px; }
         .container { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 50px; }
+        .status-bar { background: #333; padding: 5px; font-size: 12px; color: #888; position: fixed; bottom: 0; left: 0; width: 100%; }
         
-        /* 顯示端樣式 */
         .card { position: relative; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 300px; padding: 40px 20px; transition: 0.3s; }
         .name { font-size: 2em; font-weight: bold; margin-bottom: 15px; }
         .votes { font-size: 5em; font-weight: 900; color: #f1c40f; margin: 10px 0; }
@@ -20,10 +20,8 @@
             font-weight: bold; font-size: 1.2em; transform: rotate(-10deg); box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
         }
         .is-winner { border-color: var(--primary-color); box-shadow: 0 0 30px rgba(231, 76, 60, 0.4); }
-        .is-winner .winner-tag { display: block; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1) rotate(-10deg); } }
+        .is-winner .winner-tag { display: block; }
 
-        /* 後台端樣式 */
         .admin-only { display: none; background: #eee; color: #333; padding: 20px; border-radius: 10px; margin-top: 20px; }
         .admin-btn { padding: 15px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 8px; width: 100%; margin-top: 10px; }
         .btn-end { background: var(--primary-color); margin-top: 40px; padding: 10px 30px; width: auto; }
@@ -34,7 +32,7 @@
 
     <div id="display-ui">
         <h1 id="title">2026 實時開票實況</h1>
-        <div class="container" id="vote-display">載入中...</div>
+        <div class="container" id="vote-display">系統啟動中，請稍候...</div>
     </div>
 
     <div id="admin-ui" class="admin-only">
@@ -45,6 +43,8 @@
             <button class="admin-btn btn-reset" onclick="resetData()">一鍵歸零重整</button>
         </div>
     </div>
+
+    <div class="status-bar" id="connection-status">正在嘗試連接 Firebase...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -66,6 +66,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const isAdmin = urlParams.get('mode') === 'admin';
+        
         if (isAdmin) {
             document.getElementById('admin-ui').style.display = 'block';
             document.body.style.background = '#f0f2f5';
@@ -78,14 +79,20 @@
             isFinished: false
         };
 
+        // 監聽連線
         onValue(voteRef, (snapshot) => {
+            document.getElementById('connection-status').innerText = "Firebase 連線成功";
             const data = snapshot.val();
             if (data) {
                 currentData = data;
             } else {
+                console.log("資料庫為空，正在初始化...");
                 set(voteRef, currentData);
             }
             render();
+        }, (error) => {
+            document.getElementById('connection-status').innerText = "連線失敗：" + error.message;
+            console.error(error);
         });
 
         window.addVote = (id) => {
@@ -95,22 +102,19 @@
         };
 
         window.endVoting = () => {
-            if (confirm("確定結束嗎？將產生當選標記且無法修改。")) {
+            if (confirm("確定結束嗎？")) {
                 currentData.isFinished = true;
                 update(voteRef, currentData);
             }
         };
 
-        // 新增：一鍵重整資料功能
         window.resetData = () => {
-            if (confirm("🚨 警告：這將會刪除目前所有票數並重設狀態，確定要歸零嗎？")) {
-                const newData = {
+            if (confirm("確定要歸零嗎？")) {
+                set(voteRef, {
                     c1: { name: "候選人 1", count: 0 },
                     c2: { name: "候選人 2", count: 0 },
                     isFinished: false
-                };
-                set(voteRef, newData);
-                alert("資料已成功歸零！");
+                });
             }
         };
 
