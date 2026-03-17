@@ -15,14 +15,18 @@
         .card { position: relative; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; }
         
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
-        .votes { font-size: 5em; font-weight: 900; color: var(--primary); margin: 10px 0; line-height: 1; }
-        .rate { font-size: 1.5em; color: #888; }
+        .votes { font-size: 5em; font-weight: 900; color: var(--primary); margin: 10px 0; line-height: 1; position: relative; display: inline-block; }
+        .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
         
-        /* 當選圖片標記 */
+        /* 當選標記尺寸與位置微調（較建議此版本） */
         .winner-stamp { 
-            display: none; position: absolute; 
-            bottom: -20px; right: -20px; 
-            width: 150px; height: 150px;
+            display: none; 
+            position: absolute; 
+            /* 精確定位於票數右下方 */
+            top: 40px; 
+            right: -35px; 
+            width: 90px;  /* 縮小至數字高度約 65% */
+            height: 90px;
             z-index: 10;
             pointer-events: none;
         }
@@ -31,6 +35,19 @@
         @keyframes stampIn {
             from { transform: scale(3) rotate(-45deg); opacity: 0; }
             to { transform: scale(1) rotate(-15deg); opacity: 1; }
+        }
+
+        #congrats-msg {
+            display: none;
+            margin-top: 40px;
+            font-size: 1.8em;
+            color: #f1c40f;
+            line-height: 1.6;
+            font-weight: bold;
+            background: rgba(241, 196, 15, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px dashed #f1c40f;
         }
 
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; }
@@ -52,17 +69,23 @@
     <div id="counting-ui" class="container">
         <div class="card" id="card-c1">
             <div class="name">1 號候選人</div>
-            <div class="votes" id="v1">0</div>
+            <div class="votes">
+                <span id="v1">0</span>
+                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
+            </div>
             <div class="rate" id="r1">得票率: 0.0%</div>
-            <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
         </div>
         <div class="card" id="card-c2">
             <div class="name">2 號候選人</div>
-            <div class="votes" id="v2">0</div>
+            <div class="votes">
+                <span id="v2">0</span>
+                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
+            </div>
             <div class="rate" id="r2">得票率: 0.0%</div>
-            <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
         </div>
     </div>
+
+    <div id="congrats-msg"></div>
 
     <div id="admin-ui" class="admin-box">
         <h3>管理員控制後台</h3>
@@ -97,8 +120,8 @@
 
         let currentData = {
             status: "waiting",
-            c1: { count: 0 },
-            c2: { count: 0 }
+            c1: { name: "1 號候選人", count: 0 },
+            c2: { name: "2 號候選人", count: 0 }
         };
 
         onValue(voteRef, (snapshot) => {
@@ -114,10 +137,12 @@
         function render(data) {
             const waitUI = document.getElementById('waiting-ui');
             const countUI = document.getElementById('counting-ui');
+            const congratsUI = document.getElementById('congrats-msg');
             
             if (data.status === "waiting") {
                 waitUI.style.display = "block";
                 countUI.style.display = "none";
+                congratsUI.style.display = "none";
             } else {
                 waitUI.style.display = "none";
                 countUI.style.display = "flex";
@@ -134,8 +159,21 @@
                 document.getElementById('card-c2').classList.remove('is-winner');
                 
                 if (data.status === "finished") {
-                    if (data.c1.count > data.c2.count) document.getElementById('card-c1').classList.add('is-winner');
-                    else if (data.c2.count > data.c1.count) document.getElementById('card-c2').classList.add('is-winner');
+                    let winnerName = "";
+                    if (data.c1.count > data.c2.count) {
+                        document.getElementById('card-c1').classList.add('is-winner');
+                        winnerName = data.c1.name;
+                    } else if (data.c2.count > data.c1.count) {
+                        document.getElementById('card-c2').classList.add('is-winner');
+                        winnerName = data.c2.name;
+                    }
+                    
+                    if (winnerName) {
+                        congratsUI.innerHTML = `恭喜 ${winnerName} 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                        congratsUI.style.display = "block";
+                    }
+                } else {
+                    congratsUI.style.display = "none";
                 }
             }
         }
@@ -155,8 +193,8 @@
             if (confirm("確定重整數據嗎？這將清空票數並回到等待畫面。")) {
                 set(voteRef, {
                     status: "waiting",
-                    c1: { count: 0 },
-                    c2: { count: 0 }
+                    c1: { name: "1 號候選人", count: 0 },
+                    c2: { name: "2 號候選人", count: 0 }
                 });
             }
         };
