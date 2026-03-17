@@ -12,28 +12,39 @@
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
         
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
-        .card { position: static; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; }
+        .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; position: relative; }
         
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
         
         .votes-container {
             display: inline-block;
-            position: relative;
+            position: relative; 
             margin: 10px 0;
             line-height: 1;
         }
         .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
-        .rate { font-size: 1.5em; color: #888; }
+        
+        .vote-unit {
+            font-size: 2.2em; 
+            color: var(--primary); 
+            margin-left: 8px;
+            font-weight: bold;
+            vertical-align: baseline;
+            opacity: 0.9;
+        }
+
+        .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
         
         .winner-stamp { 
             display: none; 
             position: absolute; 
-            bottom: 10px;    
-            right: -30px;   
-            width: 90px;    
-            height: 90px;
+            bottom: -12px;   
+            right: -28px;    
+            width: 75px;     
+            height: 75px;
             z-index: 10;
             pointer-events: none;
+            transform: rotate(-15deg);
         }
         .is-winner .winner-stamp { display: block; animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
@@ -55,9 +66,11 @@
             border: 1px dashed #f1c40f;
         }
 
+        #congrats-msg span { color: white; } 
+
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; }
         .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-        .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; font-weight: normal; }
+        .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; }
         button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .btn-start { background: #27ae60; color: white; }
         .btn-add { background: #3498db; color: white; }
@@ -77,6 +90,7 @@
             <div class="name">1 號候選人</div>
             <div class="votes-container">
                 <span class="votes" id="v1">0</span>
+                <span class="vote-unit">票</span>
                 <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r1">得票率: 0.0%</div>
@@ -85,6 +99,7 @@
             <div class="name">2 號候選人</div>
             <div class="votes-container">
                 <span class="votes" id="v2">0</span>
+                <span class="vote-unit">票</span>
                 <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r2">得票率: 0.0%</div>
@@ -97,14 +112,12 @@
         <h3>管理員控制後台</h3>
         <div class="admin-controls">
             <button class="btn-start" onclick="updateStatus('started')">開始開票</button>
-            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 票 (鍵盤: 1)</button>
-            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 票 (鍵盤: 2)</button>
+            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 (鍵盤 1/ㄅ)</button>
+            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 (鍵盤 2/ㄉ)</button>
             <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
         </div>
-        <div class="hotkey-hint">
-            快捷鍵提示：[1/2] 加票 | [Q/W] 減票 | [Enter] 切換流程
-        </div>
-        <button class="btn-reset" onclick="resetData()">重整數據</button>
+        <div class="hotkey-hint">快速操作：[1/ㄅ]、[2/ㄉ] 加票 | [Q/ㄆ]、[W/ㄊ] 減票 | [Enter] 切換流程</div>
+        <button class="btn-reset" onclick="resetData()">重整數據（回到準備狀態）</button>
     </div>
 
     <script type="module">
@@ -124,17 +137,28 @@
         const voteRef = ref(db, 'election_2026');
         const isAdmin = window.location.search.includes('mode=admin');
 
+        // 新增防連按機制變數
+        let lastInputTime = 0;
+        const cooldown = 200; // 冷卻時間 0.2 秒
+
         if (isAdmin) {
             document.getElementById('admin-ui').style.display = 'block';
-            
-            // 加入鍵盤監聽事件
             window.addEventListener('keydown', (e) => {
-                const key = e.key.toUpperCase();
-                if (key === '1') modifyVote('c1', 1);
-                if (key === '2') modifyVote('c2', 1);
-                if (key === 'Q') modifyVote('c1', -1);
-                if (key === 'W') modifyVote('c2', -1);
-                if (key === 'ENTER') {
+                // 防止長按重複觸發
+                if (e.repeat) return;
+                
+                // 防止連按過快 (防抖)
+                const now = Date.now();
+                if (now - lastInputTime < cooldown) return;
+                lastInputTime = now;
+
+                const key = e.key;
+                if (key === '1' || key === 'ㄅ') modifyVote('c1', 1);
+                if (key === '2' || key === 'ㄉ') modifyVote('c2', 1);
+                if (key === 'q' || key === 'Q' || key === 'ㄆ') modifyVote('c1', -1);
+                if (key === 'w' || key === 'W' || key === 'ㄊ') modifyVote('c2', -1);
+                
+                if (key === 'Enter') {
                     if (currentData.status === 'waiting') updateStatus('started');
                     else if (currentData.status === 'started') updateStatus('finished');
                 }
@@ -190,9 +214,8 @@
                         document.getElementById('card-c2').classList.add('is-winner');
                         winnerName = data.c2.name;
                     }
-                    
                     if (winnerName) {
-                        congratsUI.innerHTML = `恭喜 ${winnerName} 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                        congratsUI.innerHTML = `恭喜 <span>${winnerName}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
                         congratsUI.style.display = "block";
                     }
                 } else {
@@ -206,17 +229,16 @@
             update(voteRef, currentData);
         };
 
-        // 改良為可增減票數的函式
         window.modifyVote = (id, amount) => {
             if (currentData.status !== "started") return;
             let newCount = currentData[id].count + amount;
-            if (newCount < 0) newCount = 0; // 防止負數
+            if (newCount < 0) newCount = 0;
             currentData[id].count = newCount;
             update(voteRef, currentData);
         };
 
         window.resetData = () => {
-            if (confirm("確定重整數據嗎？")) {
+            if (confirm("確定要重置所有選舉數據嗎？")) {
                 set(voteRef, {
                     status: "waiting",
                     c1: { name: "1 號候選人", count: 0 },
