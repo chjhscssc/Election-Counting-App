@@ -12,12 +12,10 @@
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
         
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
-        /* 1. 移除卡片層級的相對定位，因為標記不再相對於它 */
         .card { position: static; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; }
         
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
         
-        /* 2. 核心修改：讓票數容器具有相對定位 */
         .votes-container {
             display: inline-block;
             position: relative;
@@ -27,14 +25,12 @@
         .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
         .rate { font-size: 1.5em; color: #888; }
         
-        /* 3. 尺寸與定位精確微調 */
         .winner-stamp { 
             display: none; 
             position: absolute; 
-            /* 定位於 votes-container 的右下方，不遮擋數字 */
-            bottom: 10px;    /* 與得票率文字保持間距，如您建議的 10px */
-            right: -30px;   /* 中心點對準數字邊緣 */
-            width: 90px;    /* 縮小至數字高度約 65%，既美觀又判讀性佳 */
+            bottom: 10px;    
+            right: -30px;   
+            width: 90px;    
             height: 90px;
             z-index: 10;
             pointer-events: none;
@@ -61,6 +57,7 @@
 
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; }
         .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+        .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; font-weight: normal; }
         button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .btn-start { background: #27ae60; color: white; }
         .btn-add { background: #3498db; color: white; }
@@ -100,11 +97,14 @@
         <h3>管理員控制後台</h3>
         <div class="admin-controls">
             <button class="btn-start" onclick="updateStatus('started')">開始開票</button>
-            <button class="btn-add" onclick="addVote('c1')">1 號 +1 票</button>
-            <button class="btn-add" onclick="addVote('c2')">2 號 +1 票</button>
+            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 票 (鍵盤: 1)</button>
+            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 票 (鍵盤: 2)</button>
             <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
         </div>
-        <button class="btn-reset" onclick="resetData()">重整數據（回到準備狀態）</button>
+        <div class="hotkey-hint">
+            快捷鍵提示：[1/2] 加票 | [Q/W] 減票 | [Enter] 切換流程
+        </div>
+        <button class="btn-reset" onclick="resetData()">重整數據</button>
     </div>
 
     <script type="module">
@@ -122,9 +122,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const voteRef = ref(db, 'election_2026');
+        const isAdmin = window.location.search.includes('mode=admin');
 
-        if (window.location.search.includes('mode=admin')) {
+        if (isAdmin) {
             document.getElementById('admin-ui').style.display = 'block';
+            
+            // 加入鍵盤監聽事件
+            window.addEventListener('keydown', (e) => {
+                const key = e.key.toUpperCase();
+                if (key === '1') modifyVote('c1', 1);
+                if (key === '2') modifyVote('c2', 1);
+                if (key === 'Q') modifyVote('c1', -1);
+                if (key === 'W') modifyVote('c2', -1);
+                if (key === 'ENTER') {
+                    if (currentData.status === 'waiting') updateStatus('started');
+                    else if (currentData.status === 'started') updateStatus('finished');
+                }
+            });
         }
 
         let currentData = {
@@ -192,14 +206,17 @@
             update(voteRef, currentData);
         };
 
-        window.addVote = (id) => {
-            if (currentData.status !== "started") return alert("請先點擊開始開票");
-            currentData[id].count++;
+        // 改良為可增減票數的函式
+        window.modifyVote = (id, amount) => {
+            if (currentData.status !== "started") return;
+            let newCount = currentData[id].count + amount;
+            if (newCount < 0) newCount = 0; // 防止負數
+            currentData[id].count = newCount;
             update(voteRef, currentData);
         };
 
         window.resetData = () => {
-            if (confirm("確定重整數據嗎？這將清空票數並回到等待畫面。")) {
+            if (confirm("確定重整數據嗎？")) {
                 set(voteRef, {
                     status: "waiting",
                     c1: { name: "1 號候選人", count: 0 },
