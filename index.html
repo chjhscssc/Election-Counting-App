@@ -12,20 +12,29 @@
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
         
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
-        .card { position: relative; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; }
+        /* 1. 移除卡片層級的相對定位，因為標記不再相對於它 */
+        .card { position: static; background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; }
         
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
-        .votes { font-size: 5em; font-weight: 900; color: var(--primary); margin: 10px 0; line-height: 1; position: relative; display: inline-block; }
-        .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
         
-        /* 當選標記尺寸與位置微調（較建議此版本） */
+        /* 2. 核心修改：讓票數容器具有相對定位 */
+        .votes-container {
+            display: inline-block;
+            position: relative;
+            margin: 10px 0;
+            line-height: 1;
+        }
+        .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
+        .rate { font-size: 1.5em; color: #888; }
+        
+        /* 3. 尺寸與定位精確微調 */
         .winner-stamp { 
             display: none; 
             position: absolute; 
-            /* 精確定位於票數右下方 */
-            top: 40px; 
-            right: -35px; 
-            width: 90px;  /* 縮小至數字高度約 65% */
+            /* 定位於 votes-container 的右下方，不遮擋數字 */
+            bottom: 10px;    /* 與得票率文字保持間距，如您建議的 10px */
+            right: -30px;   /* 中心點對準數字邊緣 */
+            width: 90px;    /* 縮小至數字高度約 65%，既美觀又判讀性佳 */
             height: 90px;
             z-index: 10;
             pointer-events: none;
@@ -69,16 +78,16 @@
     <div id="counting-ui" class="container">
         <div class="card" id="card-c1">
             <div class="name">1 號候選人</div>
-            <div class="votes">
-                <span id="v1">0</span>
+            <div class="votes-container">
+                <span class="votes" id="v1">0</span>
                 <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r1">得票率: 0.0%</div>
         </div>
         <div class="card" id="card-c2">
             <div class="name">2 號候選人</div>
-            <div class="votes">
-                <span id="v2">0</span>
+            <div class="votes-container">
+                <span class="votes" id="v2">0</span>
                 <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r2">得票率: 0.0%</div>
