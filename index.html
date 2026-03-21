@@ -8,19 +8,20 @@
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #f1c40f; --accent: #e74c3c; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); color: white; text-align: center; margin: 0; padding: 20px; transition: background 0.5s; }
         
-        /* 當狀態為 closed 時，全黑且隱藏所有內容 */
         body.is-closed { background: black !important; }
         body.is-closed #waiting-ui, 
         body.is-closed #counting-ui, 
         body.is-closed #congrats-msg,
         body.is-closed h1 { display: none !important; }
 
+        .is-dimmed .card { opacity: 0.3; filter: blur(2px); transition: 0.3s; }
+
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
         
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
         
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
-        .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 320px; padding: 40px 20px; transition: 0.3s; position: relative; }
+        .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 340px; padding: 40px 20px; transition: 0.3s; position: relative; }
         
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
         
@@ -87,11 +88,13 @@
         .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; }
         button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .btn-start { background: #27ae60; color: white; }
+        .btn-pause { background: #f39c12; color: white; }
+        .btn-check { background: #d35400; color: white; }
         .btn-add { background: #3498db; color: white; }
-        .btn-end { background: #e67e22; color: white; }
+        .btn-end { background: #c0392b; color: white; }
         .btn-close { background: #000; color: #f1c40f; border: 1px solid #f1c40f; }
         .btn-send { background: #9b59b6; color: white; }
-        .btn-reset { background: #c0392b; color: white; margin-top: 20px; }
+        .btn-reset { background: #7f8c8d; color: white; margin-top: 20px; }
         button:hover { opacity: 0.8; transform: scale(1.05); }
     </style>
 </head>
@@ -103,7 +106,7 @@
 
     <div id="counting-ui" class="container">
         <div class="card" id="card-c1">
-            <div class="name">1 號候選人</div>
+            <div class="name" id="name-c1">1 號 陳瑞婕、郭芸妘</div>
             <div class="votes-container">
                 <span class="votes" id="v1">0</span>
                 <span class="vote-unit">票</span>
@@ -112,7 +115,7 @@
             <div class="rate" id="r1">得票率: 0.0%</div>
         </div>
         <div class="card" id="card-c2">
-            <div class="name">2 號候選人</div>
+            <div class="name" id="name-c2">2 號 許維辰、李佳寧</div>
             <div class="votes-container">
                 <span class="votes" id="v2">0</span>
                 <span class="vote-unit">票</span>
@@ -127,7 +130,9 @@
     <div id="admin-ui" class="admin-box">
         <h3>管理員控制後台</h3>
         <div class="admin-controls">
-            <button class="btn-start" onclick="updateStatus('started')">開始開票</button>
+            <button class="btn-start" onclick="updateStatus('started')">開始/恢復開票</button>
+            <button class="btn-pause" onclick="updateStatus('paused')">暫停開票</button>
+            <button class="btn-check" onclick="updateStatus('checking')">票數核對中</button>
             <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 (1/ㄅ)</button>
             <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 (2/ㄉ)</button>
             <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
@@ -135,14 +140,14 @@
         </div>
 
         <div class="announcement-tool">
-            <textarea id="announcement-input" placeholder="輸入後續資訊..."></textarea>
+            <textarea id="announcement-input" placeholder="手動發送內容..."></textarea>
             <div class="announcement-btns">
                 <button class="btn-send" onclick="sendAnnouncement()">確定發送公告</button>
                 <button style="background:#7f8c8d; color:white;" onclick="clearAnnouncement()">清除公告</button>
             </div>
         </div>
 
-        <div class="hotkey-hint">快速操作：[1/ㄅ]、[2/ㄉ] 加票 | [Q/ㄆ]、[W/ㄊ] 減票 | [Enter] 切換流程</div>
+        <div class="hotkey-hint">快速操作：[1/ㄅ]、[2/ㄉ] 加票 | [Q/ㄆ]、[W/ㄊ] 減票 | [Enter] 循環狀態</div>
         <button class="btn-reset" onclick="resetData()">重整數據（回到準備狀態）</button>
     </div>
 
@@ -182,16 +187,17 @@
                 if (key === 'w' || key === 'W' || key === 'ㄊ') modifyVote('c2', -1);
                 
                 if (key === 'Enter') {
-                    if (currentData.status === 'waiting') updateStatus('started');
-                    else if (currentData.status === 'started') updateStatus('finished');
+                    const order = ['waiting', 'started', 'paused', 'checking', 'finished'];
+                    const nextIdx = (order.indexOf(currentData.status) + 1) % order.length;
+                    updateStatus(order[nextIdx]);
                 }
             });
         }
 
         let currentData = {
             status: "waiting",
-            c1: { name: "1 號候選人", count: 0 },
-            c2: { name: "2 號候選人", count: 0 },
+            c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+            c2: { name: "2 號 許維辰、李佳寧", count: 0 },
             announcement: ""
         };
 
@@ -210,7 +216,6 @@
             const countUI = document.getElementById('counting-ui');
             const congratsUI = document.getElementById('congrats-msg');
             
-            // 處理關閉狀態
             if (data.status === "closed") {
                 document.body.classList.add('is-closed');
                 return;
@@ -222,6 +227,7 @@
                 waitUI.style.display = "block";
                 countUI.style.display = "none";
                 congratsUI.style.display = "none";
+                document.getElementById('counting-ui').classList.remove('is-dimmed');
             } else {
                 waitUI.style.display = "none";
                 countUI.style.display = "flex";
@@ -237,27 +243,32 @@
 
                 document.getElementById('card-c1').classList.remove('is-winner');
                 document.getElementById('card-c2').classList.remove('is-winner');
-                
-                if (data.status === "finished") {
-                    if (data.announcement && data.announcement.trim() !== "") {
-                        congratsUI.innerText = data.announcement;
-                    } else {
-                        const c1Passed = getRateVal(data.c1.count) > 0.5;
-                        const c2Passed = getRateVal(data.c2.count) > 0.5;
 
-                        if (c1Passed) {
-                            document.getElementById('card-c1').classList.add('is-winner');
-                            congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
-                        } else if (c2Passed) {
-                            document.getElementById('card-c2').classList.add('is-winner');
-                            congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
-                        } else {
-                            congratsUI.innerHTML = `開票已結束，雙方得票率皆未超過 50%<br>請靜待選委會後續說明`;
-                        }
+                congratsUI.style.display = "block";
+                document.getElementById('counting-ui').classList.add('is-dimmed');
+
+                if (data.announcement && data.announcement.trim() !== "") {
+                    congratsUI.innerText = data.announcement;
+                } else if (data.status === "paused") {
+                    congratsUI.innerHTML = `網頁整理中，即將恢復<br>敬請稍後`;
+                } else if (data.status === "checking") {
+                    congratsUI.innerHTML = `票數核對中，即將公布當選人<br>敬請稍後`;
+                } else if (data.status === "finished") {
+                    const c1Passed = getRateVal(data.c1.count) > 0.5;
+                    const c2Passed = getRateVal(data.c2.count) > 0.5;
+
+                    if (c1Passed) {
+                        document.getElementById('card-c1').classList.add('is-winner');
+                        congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                    } else if (c2Passed) {
+                        document.getElementById('card-c2').classList.add('is-winner');
+                        congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                    } else {
+                        congratsUI.innerHTML = `開票已結束，雙方得票率皆未超過 50%<br>請靜待選委會後續說明`;
                     }
-                    congratsUI.style.display = "block";
                 } else {
                     congratsUI.style.display = "none";
+                    document.getElementById('counting-ui').classList.remove('is-dimmed');
                 }
             }
         }
@@ -290,8 +301,8 @@
             if (confirm("確定要重置所有選舉數據嗎？")) {
                 set(voteRef, {
                     status: "waiting",
-                    c1: { name: "1 號候選人", count: 0 },
-                    c2: { name: "2 號候選人", count: 0 },
+                    c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+                    c2: { name: "2 號 許維辰、李佳寧", count: 0 },
                     announcement: ""
                 });
             }
