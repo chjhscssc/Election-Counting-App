@@ -14,8 +14,6 @@
         body.is-closed #congrats-msg,
         body.is-closed h1 { display: none !important; }
 
-        .is-dimmed .card { opacity: 0.3; filter: blur(2px); transition: 0.3s; }
-
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
         
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
@@ -64,16 +62,18 @@
 
         #congrats-msg {
             display: none;
-            margin-top: 40px;
+            margin: 40px auto;
+            max-width: 800px;
             font-size: 1.8em;
             color: #f1c40f;
             line-height: 1.6;
             font-weight: bold;
-            background: rgba(241, 196, 15, 0.1);
-            padding: 20px;
+            background: rgba(0, 0, 0, 0.85); /* 增加黑色背景確保文字可讀 */
+            padding: 30px;
             border-radius: 15px;
-            border: 1px dashed #f1c40f;
+            border: 2px dashed #f1c40f;
             white-space: pre-line;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         #congrats-msg span { color: white; } 
@@ -227,7 +227,6 @@
                 waitUI.style.display = "block";
                 countUI.style.display = "none";
                 congratsUI.style.display = "none";
-                document.getElementById('counting-ui').classList.remove('is-dimmed');
             } else {
                 waitUI.style.display = "none";
                 countUI.style.display = "flex";
@@ -244,15 +243,16 @@
                 document.getElementById('card-c1').classList.remove('is-winner');
                 document.getElementById('card-c2').classList.remove('is-winner');
 
-                congratsUI.style.display = "block";
-                document.getElementById('counting-ui').classList.add('is-dimmed');
-
+                // 訊息區顯示判斷
                 if (data.announcement && data.announcement.trim() !== "") {
                     congratsUI.innerText = data.announcement;
+                    congratsUI.style.display = "block";
                 } else if (data.status === "paused") {
                     congratsUI.innerHTML = `網頁整理中，即將恢復<br>敬請稍後`;
+                    congratsUI.style.display = "block";
                 } else if (data.status === "checking") {
                     congratsUI.innerHTML = `票數核對中，即將公布當選人<br>敬請稍後`;
+                    congratsUI.style.display = "block";
                 } else if (data.status === "finished") {
                     const c1Passed = getRateVal(data.c1.count) > 0.5;
                     const c2Passed = getRateVal(data.c2.count) > 0.5;
@@ -266,9 +266,9 @@
                     } else {
                         congratsUI.innerHTML = `開票已結束，雙方得票率皆未超過 50%<br>請靜待選委會後續說明`;
                     }
+                    congratsUI.style.display = "block";
                 } else {
                     congratsUI.style.display = "none";
-                    document.getElementById('counting-ui').classList.remove('is-dimmed');
                 }
             }
         }
