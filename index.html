@@ -8,73 +8,118 @@
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #f1c40f; --accent: #e74c3c; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); color: white; text-align: center; margin: 0; padding: 20px; transition: background 0.5s; }
         
-        /* 觀眾端專用：關閉後的樣式 */
-        body.is-closed:not(.admin-mode) { background: black !important; }
-        body.is-closed:not(.admin-mode) * { display: none !important; }
-        body.is-closed:not(.admin-mode) #not-found-msg { display: block !important; color: #555; font-family: sans-serif; margin-top: 200px; font-size: 2em; }
+        body.is-closed { background: black !important; }
+        body.is-closed #waiting-ui, 
+        body.is-closed #counting-ui, 
+        body.is-closed #congrats-msg,
+        body.is-closed h1 { display: none !important; }
 
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
+        
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
+        
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
         .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 340px; padding: 40px 20px; transition: 0.3s; position: relative; }
+        
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
-        .votes-container { display: inline-block; position: relative; margin: 10px 0; line-height: 1; }
+        
+        .votes-container {
+            display: inline-block;
+            position: relative; 
+            margin: 10px 0;
+            line-height: 1;
+        }
         .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
-        .vote-unit { font-size: 2.2em; color: var(--primary); margin-left: 8px; font-weight: bold; vertical-align: baseline; opacity: 0.9; }
+        
+        .vote-unit {
+            font-size: 2.2em; 
+            color: var(--primary); 
+            margin-left: 8px;
+            font-weight: bold;
+            vertical-align: baseline;
+            opacity: 0.9;
+        }
+
         .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
         
-        /* 當選圖章 */
-        .winner-stamp { display: none; position: absolute; bottom: -12px; right: -28px; width: 75px; height: 75px; z-index: 10; pointer-events: none; transform: rotate(-15deg); }
+        .winner-stamp { 
+            display: none; 
+            position: absolute; 
+            bottom: -12px;   
+            right: -28px;    
+            width: 75px;     
+            height: 75px;
+            z-index: 10;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
         .is-winner .winner-stamp { display: block; animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes stampIn { from { transform: scale(3) rotate(-45deg); opacity: 0; } to { transform: scale(1) rotate(-15deg); opacity: 1; } }
 
-        /* 公告訊息區 */
-        #congrats-msg { display: none; margin: 40px auto; max-width: 800px; font-size: 1.8em; color: #f1c40f; line-height: 1.6; font-weight: bold; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 15px; border: 2px dashed #f1c40f; white-space: pre-line; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        @keyframes stampIn {
+            from { transform: scale(3) rotate(-45deg); opacity: 0; }
+            to { transform: scale(1) rotate(-15deg); opacity: 1; }
+        }
+
+        #congrats-msg {
+            display: none;
+            margin: 40px auto;
+            max-width: 800px;
+            font-size: 1.8em;
+            color: #f1c40f;
+            line-height: 1.6;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.85); /* 增加黑色背景確保文字可讀 */
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px dashed #f1c40f;
+            white-space: pre-line;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
         #congrats-msg span { color: white; } 
 
-        /* 倒數層 - 僅觀眾會看到全黑背景，管理員是半透明 */
-        #countdown-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 10000;
-            justify-content: center; align-items: center; font-size: 4em; color: #f1c40f;
-        }
-        body.admin-mode #countdown-overlay { background: rgba(0,0,0,0.6); pointer-events: none; }
-
-        /* 管理員後台 */
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; position: relative; z-index: 999; }
         .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-        .btn-close { background: #000; color: #f1c40f; border: 1px solid #f1c40f; }
+        
+        .announcement-tool { margin-top: 30px; padding-top: 20px; border-top: 1px solid #455a64; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        #announcement-input { width: 80%; max-width: 500px; height: 80px; padding: 10px; border-radius: 8px; border: none; font-size: 16px; background: #ecf0f1; color: #2c3e50; font-family: inherit; }
+        .announcement-btns { display: flex; gap: 10px; }
+
+        .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; }
         button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .btn-start { background: #27ae60; color: white; }
+        .btn-pause { background: #f39c12; color: white; }
+        .btn-check { background: #d35400; color: white; }
+        .btn-add { background: #3498db; color: white; }
+        .btn-end { background: #c0392b; color: white; }
+        .btn-close { background: #000; color: #f1c40f; border: 1px solid #f1c40f; }
+        .btn-send { background: #9b59b6; color: white; }
+        .btn-reset { background: #7f8c8d; color: white; margin-top: 20px; }
         button:hover { opacity: 0.8; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-    <div id="not-found-msg" style="display:none;">
-        <h2 style="font-size:3em; margin:0;">404</h2>
-        <p>Not Found. The requested URL was not found on this server.</p>
-    </div>
-
     <h1>臺北市私立靜心高級中學<br>第七屆學生會正副會長選舉開票系統</h1>
-
-    <div id="countdown-overlay"></div>
 
     <div id="waiting-ui" class="status-container">開票即將開始，敬請稍後</div>
 
     <div id="counting-ui" class="container">
         <div class="card" id="card-c1">
-            <div class="name">1 號 陳瑞婕、郭芸妘</div>
+            <div class="name" id="name-c1">1 號 陳瑞婕、郭芸妘</div>
             <div class="votes-container">
-                <span class="votes" id="v1">0</span><span class="vote-unit">票</span>
-                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png">
+                <span class="votes" id="v1">0</span>
+                <span class="vote-unit">票</span>
+                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r1">得票率: 0.0%</div>
         </div>
         <div class="card" id="card-c2">
-            <div class="name">2 號 許維辰、李佳寧</div>
+            <div class="name" id="name-c2">2 號 許維辰、李佳寧</div>
             <div class="votes-container">
-                <span class="votes" id="v2">0</span><span class="vote-unit">票</span>
-                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png">
+                <span class="votes" id="v2">0</span>
+                <span class="vote-unit">票</span>
+                <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
             </div>
             <div class="rate" id="r2">得票率: 0.0%</div>
         </div>
@@ -85,15 +130,25 @@
     <div id="admin-ui" class="admin-box">
         <h3>管理員控制後台</h3>
         <div class="admin-controls">
-            <button style="background:#27ae60; color:white;" onclick="updateStatus('started')">恢復開票</button>
-            <button style="background:#f39c12; color:white;" onclick="updateStatus('paused')">暫停開票</button>
-            <button style="background:#d35400; color:white;" onclick="updateStatus('checking')">票數核對中</button>
-            <button style="background:#3498db; color:white;" onclick="modifyVote('c1', 1)">1 號 +1</button>
-            <button style="background:#3498db; color:white;" onclick="modifyVote('c2', 1)">2 號 +1</button>
-            <button style="background:#c0392b; color:white;" onclick="updateStatus('finished')">結束開票</button>
-            <button class="btn-close" onclick="triggerShutdown()">自毀倒數（關閉網頁）</button>
+            <button class="btn-start" onclick="updateStatus('started')">開始/恢復開票</button>
+            <button class="btn-pause" onclick="updateStatus('paused')">暫停開票</button>
+            <button class="btn-check" onclick="updateStatus('checking')">票數核對中</button>
+            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 (1/ㄅ)</button>
+            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 (2/ㄉ)</button>
+            <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
+            <button class="btn-close" onclick="updateStatus('closed')">關閉網頁（全黑）</button>
         </div>
-        <button style="background:#7f8c8d; color:white; margin-top:20px;" onclick="resetData()">重置數據</button>
+
+        <div class="announcement-tool">
+            <textarea id="announcement-input" placeholder="手動發送內容..."></textarea>
+            <div class="announcement-btns">
+                <button class="btn-send" onclick="sendAnnouncement()">確定發送公告</button>
+                <button style="background:#7f8c8d; color:white;" onclick="clearAnnouncement()">清除公告</button>
+            </div>
+        </div>
+
+        <div class="hotkey-hint">快速操作：[1/ㄅ]、[2/ㄉ] 加票 | [Q/ㄆ]、[W/ㄊ] 減票 | [Enter] 循環狀態</div>
+        <button class="btn-reset" onclick="resetData()">重整數據（回到準備狀態）</button>
     </div>
 
     <script type="module">
@@ -113,93 +168,149 @@
         const voteRef = ref(db, 'election_2026');
         const isAdmin = window.location.search.includes('mode=admin');
 
+        let lastInputTime = 0;
+        const cooldown = 200; 
+
         if (isAdmin) {
             document.getElementById('admin-ui').style.display = 'block';
-            document.body.classList.add('admin-mode');
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                if (e.repeat) return;
+                const now = Date.now();
+                if (now - lastInputTime < cooldown) return;
+                lastInputTime = now;
+
+                const key = e.key;
+                if (key === '1' || key === 'ㄅ') modifyVote('c1', 1);
+                if (key === '2' || key === 'ㄉ') modifyVote('c2', 1);
+                if (key === 'q' || key === 'Q' || key === 'ㄆ') modifyVote('c1', -1);
+                if (key === 'w' || key === 'W' || key === 'ㄊ') modifyVote('c2', -1);
+                
+                if (key === 'Enter') {
+                    const order = ['waiting', 'started', 'paused', 'checking', 'finished'];
+                    const nextIdx = (order.indexOf(currentData.status) + 1) % order.length;
+                    updateStatus(order[nextIdx]);
+                }
+            });
         }
 
-        let currentData = { status: "waiting", c1: {count:0}, c2: {count:0}, announcement: "", countdown: "" };
+        let currentData = {
+            status: "waiting",
+            c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+            c2: { name: "2 號 許維辰、李佳寧", count: 0 },
+            announcement: ""
+        };
 
         onValue(voteRef, (snapshot) => {
             const data = snapshot.val();
-            if (!data) return;
-            currentData = data;
-            
-            // 處理自毀狀態
-            const overlay = document.getElementById('countdown-overlay');
-            if (data.status === "closing_soon") {
-                overlay.style.display = "flex";
-                overlay.innerText = data.countdown || "網頁即將於30秒後關閉";
-            } else if (data.status === "closed") {
-                document.body.classList.add('is-closed');
-                overlay.style.display = "none";
-                // 5 秒後徹底銷毀 (較建議此版本)
-                if(!isAdmin) {
-                    setTimeout(() => {
-                        document.open();
-                        document.write("<body style='background:black; color:#555; text-align:center; padding-top:200px; font-family:sans-serif;'><h1>404 Not Found</h1><p>The server could not find the requested resource.</p></body>");
-                        document.close();
-                    }, 5000);
-                }
+            if (data) {
+                currentData = data;
+                render(data);
             } else {
-                document.body.classList.remove('is-closed');
-                overlay.style.display = "none";
+                set(voteRef, currentData);
             }
+        });
 
-            // 原始渲染邏輯
+        function render(data) {
             const waitUI = document.getElementById('waiting-ui');
             const countUI = document.getElementById('counting-ui');
             const congratsUI = document.getElementById('congrats-msg');
             
-            if (data.status === "waiting") {
-                waitUI.style.display = "block"; countUI.style.display = "none"; congratsUI.style.display = "none";
+            if (data.status === "closed") {
+                // 如果不是管理員模式，直接刪除所有網頁 HTML 結構（較建議此版本）
+                if (!isAdmin) {
+                    document.documentElement.innerHTML = ""; 
+                    return;
+                }
+                document.body.classList.add('is-closed');
+                return;
             } else {
-                waitUI.style.display = "none"; countUI.style.display = "flex";
-                const v1 = data.c1.count, v2 = data.c2.count, total = v1 + v2;
-                document.getElementById('v1').innerText = v1;
-                document.getElementById('v2').innerText = v2;
-                document.getElementById('r1').innerText = `得票率: ${(total===0?0:v1/total*100).toFixed(1)}%`;
-                document.getElementById('r2').innerText = `得票率: ${(total===0?0:v2/total*100).toFixed(1)}%`;
+                document.body.classList.remove('is-closed');
+            }
+            
+            if (data.status === "waiting") {
+                waitUI.style.display = "block";
+                countUI.style.display = "none";
+                congratsUI.style.display = "none";
+            } else {
+                waitUI.style.display = "none";
+                countUI.style.display = "flex";
                 
+                const total = data.c1.count + data.c2.count;
+                const getRateVal = (c) => total === 0 ? 0 : (c / total);
+                const getRateStr = (c) => (getRateVal(c) * 100).toFixed(1);
+                
+                document.getElementById('v1').innerText = data.c1.count;
+                document.getElementById('v2').innerText = data.c2.count;
+                document.getElementById('r1').innerText = `得票率: ${getRateStr(data.c1.count)}%`;
+                document.getElementById('r2').innerText = `得票率: ${getRateStr(data.c2.count)}%`;
+
                 document.getElementById('card-c1').classList.remove('is-winner');
                 document.getElementById('card-c2').classList.remove('is-winner');
 
-                if (data.status === "finished") {
+                // 訊息區顯示判斷
+                if (data.announcement && data.announcement.trim() !== "") {
+                    congratsUI.innerText = data.announcement;
                     congratsUI.style.display = "block";
-                    if (v1 > total/2) { document.getElementById('card-c1').classList.add('is-winner'); congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選`; }
-                    else if (v2 > total/2) { document.getElementById('card-c2').classList.add('is-winner'); congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選`; }
                 } else if (data.status === "paused") {
-                    congratsUI.style.display = "block"; congratsUI.innerText = "網頁整理中，即將恢復";
+                    congratsUI.innerHTML = `網頁整理中，即將恢復<br>敬請稍後`;
+                    congratsUI.style.display = "block";
                 } else if (data.status === "checking") {
-                    congratsUI.style.display = "block"; congratsUI.innerText = "票數核對中，即將公布當選人";
+                    congratsUI.innerHTML = `票數核對中，即將公布當選人<br>敬請稍後`;
+                    congratsUI.style.display = "block";
+                } else if (data.status === "finished") {
+                    const c1Passed = getRateVal(data.c1.count) > 0.5;
+                    const c2Passed = getRateVal(data.c2.count) > 0.5;
+
+                    if (c1Passed) {
+                        document.getElementById('card-c1').classList.add('is-winner');
+                        congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                    } else if (c2Passed) {
+                        document.getElementById('card-c2').classList.add('is-winner');
+                        congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選<br>第七屆臺北市私立靜心高級中學學生會會長、副會長！`;
+                    } else {
+                        congratsUI.innerHTML = `開票已結束，雙方得票率皆未超過 50%<br>請靜待選委會後續說明`;
+                    }
+                    congratsUI.style.display = "block";
                 } else {
-                    congratsUI.style.display = data.announcement ? "block" : "none";
-                    congratsUI.innerText = data.announcement || "";
+                    congratsUI.style.display = "none";
                 }
             }
-        });
+        }
 
-        // 管理員操作
-        window.triggerShutdown = () => {
-            if(!confirm("確定啟動 35 秒自毀程序？觀眾端將失效。")) return;
-            update(voteRef, { status: "closing_soon", countdown: "網頁即將於30秒後關閉" });
-            setTimeout(() => {
-                let sec = 30;
-                const i = setInterval(() => {
-                    if(sec <= 0) { clearInterval(i); update(voteRef, { status: "closed" }); }
-                    else { update(voteRef, { countdown: sec.toString() }); sec--; }
-                }, 1000);
-            }, 5000);
+        window.updateStatus = (s) => {
+            currentData.status = s;
+            update(voteRef, currentData);
         };
 
-        window.updateStatus = (s) => update(voteRef, { status: s });
-        window.modifyVote = (id, amt) => {
-            if(currentData.status !== 'started') return;
-            let nc = currentData[id].count + amt;
-            update(voteRef, { [`${id}/count`]: nc < 0 ? 0 : nc });
+        window.modifyVote = (id, amount) => {
+            if (currentData.status !== "started") return;
+            let newCount = currentData[id].count + amount;
+            if (newCount < 0) newCount = 0;
+            currentData[id].count = newCount;
+            update(voteRef, currentData);
         };
+
+        window.sendAnnouncement = () => {
+            const content = document.getElementById('announcement-input').value;
+            if (content.trim() === "") return alert("請輸入內容後再發送");
+            update(voteRef, { announcement: content });
+        };
+
+        window.clearAnnouncement = () => {
+            document.getElementById('announcement-input').value = "";
+            update(voteRef, { announcement: "" });
+        };
+
         window.resetData = () => {
-            if(confirm("確定重置？")) set(voteRef, { status: "waiting", c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 }, c2: { name: "2 號 許維辰、李佳寧", count: 0 }, announcement: "", countdown: "" });
+            if (confirm("確定要重置所有選舉數據嗎？")) {
+                set(voteRef, {
+                    status: "waiting",
+                    c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+                    c2: { name: "2 號 許維辰、李佳寧", count: 0 },
+                    announcement: ""
+                });
+            }
         };
     </script>
 </body>
