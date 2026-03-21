@@ -217,9 +217,16 @@
             const congratsUI = document.getElementById('congrats-msg');
             
             if (data.status === "closed") {
-                // 如果不是管理員模式，直接刪除所有網頁 HTML 結構（較建議此版本）
+                // 如果不是管理員模式，顯示 404 並清空內容（較建議此版本）
                 if (!isAdmin) {
-                    document.documentElement.innerHTML = ""; 
+                    document.documentElement.innerHTML = `
+                        <head><title>404 Not Found</title></head>
+                        <body style="background:black; color:white; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
+                            <div style="text-align:center;">
+                                <h1 style="font-size:2em; border-right:1px solid white; padding:10px 20px; display:inline-block; margin:0; vertical-align:middle;">404</h1>
+                                <span style="display:inline-block; padding:10px 20px; vertical-align:middle;">This page could not be found.</span>
+                            </div>
+                        </body>`;
                     return;
                 }
                 document.body.classList.add('is-closed');
