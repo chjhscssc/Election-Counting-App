@@ -12,6 +12,7 @@
         body.is-closed #waiting-ui, 
         body.is-closed #counting-ui, 
         body.is-closed #congrats-msg,
+        body.is-closed #countdown-overlay,
         body.is-closed h1 { display: none !important; }
 
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
@@ -68,7 +69,7 @@
             color: #f1c40f;
             line-height: 1.6;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.85); /* 增加黑色背景確保文字可讀 */
+            background: rgba(0, 0, 0, 0.85);
             padding: 30px;
             border-radius: 15px;
             border: 2px dashed #f1c40f;
@@ -77,6 +78,20 @@
         }
 
         #congrats-msg span { color: white; } 
+
+        /* 倒數計時專用樣式 */
+        #countdown-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 3em;
+            color: #f1c40f;
+        }
 
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; position: relative; z-index: 999; }
         .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
@@ -101,6 +116,10 @@
 <body>
 
     <h1>臺北市私立靜心高級中學<br>第七屆學生會正副會長選舉開票系統</h1>
+
+    <div id="countdown-overlay">
+        <div id="countdown-text">網頁即將於30秒後關閉</div>
+    </div>
 
     <div id="waiting-ui" class="status-container">開票即將開始，敬請稍後</div>
 
@@ -215,12 +234,25 @@
             const waitUI = document.getElementById('waiting-ui');
             const countUI = document.getElementById('counting-ui');
             const congratsUI = document.getElementById('congrats-msg');
+            const overlay = document.getElementById('countdown-overlay');
             
+            // 處理關閉邏輯
             if (data.status === "closed") {
                 document.body.classList.add('is-closed');
+                overlay.style.display = 'none';
+                // 5 秒後徹底清除 DOM (較建議此版本)
+                setTimeout(() => {
+                    document.open();
+                    document.write("<html><body style='background:black; color:black;'></body></html>");
+                    document.close();
+                }, 5000);
                 return;
+            } else if (data.status === "closing_soon") {
+                // 這裡是過渡狀態，render 不需要做太多事，邏輯交給觸發者
+                overlay.style.display = 'flex';
             } else {
                 document.body.classList.remove('is-closed');
+                overlay.style.display = 'none';
             }
             
             if (data.status === "waiting") {
@@ -243,7 +275,6 @@
                 document.getElementById('card-c1').classList.remove('is-winner');
                 document.getElementById('card-c2').classList.remove('is-winner');
 
-                // 訊息區顯示判斷
                 if (data.announcement && data.announcement.trim() !== "") {
                     congratsUI.innerText = data.announcement;
                     congratsUI.style.display = "block";
@@ -274,8 +305,34 @@
         }
 
         window.updateStatus = (s) => {
-            currentData.status = s;
-            update(voteRef, currentData);
+            if (s === 'closed') {
+                if(!confirm("確定要啟動 30 秒倒數自毀程序嗎？")) return;
+                
+                // 先同步狀態至 Firebase 讓所有人看到倒數介面
+                update(voteRef, { status: "closing_soon" });
+
+                const txt = document.getElementById('countdown-text');
+                txt.innerText = "網頁即將於30秒後關閉";
+                
+                // 5 秒後開始倒數
+                setTimeout(() => {
+                    let seconds = 30;
+                    txt.innerText = seconds;
+                    const timer = setInterval(() => {
+                        seconds--;
+                        if (seconds <= 0) {
+                            clearInterval(timer);
+                            // 時間到，正式設為 closed
+                            update(voteRef, { status: "closed" });
+                        } else {
+                            txt.innerText = seconds;
+                        }
+                    }, 1000);
+                }, 5000);
+            } else {
+                currentData.status = s;
+                update(voteRef, currentData);
+            }
         };
 
         window.modifyVote = (id, amount) => {
