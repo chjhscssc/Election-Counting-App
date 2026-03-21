@@ -8,28 +8,28 @@
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #f1c40f; --accent: #e74c3c; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); color: white; text-align: center; margin: 0; padding: 20px; transition: background 0.5s; overflow-x: hidden; }
         
-        /* 關閉狀態樣式 */
-        body.is-closed { background: black !important; }
-        body.is-closed #waiting-ui, 
-        body.is-closed #counting-ui, 
-        body.is-closed #congrats-msg,
-        body.is-closed h1 { display: none !important; }
-
-        /* 模擬 404 樣式 */
-        .error-404 { display: none; text-align: left; padding: 50px; font-family: sans-serif; color: #fff; }
-        .error-404 h2 { font-size: 24px; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        
+        /* 頁首標題 */
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
+        
+        /* 等待開始樣式 */
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
+        
+        /* 卡片容器 */
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
-        .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 340px; padding: 40px 20px; transition: 0.3s; position: relative; }
-        .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
+        .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 340px; padding: 40px 20px; transition: 0.3s; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        
+        /* 候選人資訊 */
+        .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; min-height: 2.4em; display: flex; align-items: center; justify-content: center; }
         .votes-container { display: inline-block; position: relative; margin: 10px 0; line-height: 1; }
         .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
         .vote-unit { font-size: 2.2em; color: var(--primary); margin-left: 8px; font-weight: bold; vertical-align: baseline; opacity: 0.9; }
         .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
         
-        .winner-stamp { display: none; position: absolute; bottom: -12px; right: -28px; width: 75px; height: 75px; z-index: 10; pointer-events: none; transform: rotate(-15deg); }
+        /* 當選印章 */
+        .winner-stamp { 
+            display: none; position: absolute; bottom: -12px; right: -28px; width: 85px; height: 85px; 
+            z-index: 10; pointer-events: none; transform: rotate(-15deg); 
+        }
         .is-winner .winner-stamp { display: block; animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
         @keyframes stampIn {
@@ -37,30 +37,28 @@
             to { transform: scale(1) rotate(-15deg); opacity: 1; }
         }
 
+        /* 公告/恭喜訊息區 (保持亮度，增加背景可讀性) */
         #congrats-msg {
-            display: none;
-            margin: 40px auto;
-            max-width: 800px;
-            font-size: 1.8em;
-            color: #f1c40f;
-            line-height: 1.6;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 30px;
-            border-radius: 15px;
-            border: 2px dashed #f1c40f;
-            white-space: pre-line;
+            display: none; margin: 40px auto; max-width: 800px; font-size: 1.8em; color: #f1c40f; 
+            line-height: 1.6; font-weight: bold; background: rgba(0, 0, 0, 0.85);
+            padding: 30px; border-radius: 15px; border: 2px dashed #f1c40f; white-space: pre-line;
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
+        #congrats-msg span { color: white; } 
 
-        .countdown-number { font-size: 150px; color: white; font-weight: 900; margin-top: 100px; }
+        /* 倒數大數字 */
+        .countdown-number { font-size: 150px; color: white; font-weight: 900; margin-top: 50px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
 
+        /* 管理員控制後台 */
         .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; position: relative; z-index: 999; }
-        .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+        .admin-controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+        
         .announcement-tool { margin-top: 30px; padding-top: 20px; border-top: 1px solid #455a64; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         #announcement-input { width: 80%; max-width: 500px; height: 80px; padding: 10px; border-radius: 8px; border: none; font-size: 16px; background: #ecf0f1; color: #2c3e50; font-family: inherit; }
-        
-        button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .announcement-btns { display: flex; gap: 10px; }
+
+        .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 15px; }
+        button { padding: 12px 20px; font-size: 15px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .btn-start { background: #27ae60; color: white; }
         .btn-pause { background: #f39c12; color: white; }
         .btn-check { background: #d35400; color: white; }
@@ -74,8 +72,9 @@
 </head>
 <body>
 
-    <div id="main-content">
+    <div id="app-viewport">
         <h1>臺北市私立靜心高級中學<br>第七屆學生會正副會長選舉開票系統</h1>
+
         <div id="waiting-ui" class="status-container">開票即將開始，敬請稍後</div>
 
         <div id="counting-ui" class="container">
@@ -84,7 +83,7 @@
                 <div class="votes-container">
                     <span class="votes" id="v1">0</span>
                     <span class="vote-unit">票</span>
-                    <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png">
+                    <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
                 </div>
                 <div class="rate" id="r1">得票率: 0.0%</div>
             </div>
@@ -93,7 +92,7 @@
                 <div class="votes-container">
                     <span class="votes" id="v2">0</span>
                     <span class="vote-unit">票</span>
-                    <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png">
+                    <img class="winner-stamp" src="https://image2url.com/r2/default/images/1773705761814-1c9e415b-9d2a-47c2-8eee-3cd152ded14e.png" alt="當選">
                 </div>
                 <div class="rate" id="r2">得票率: 0.0%</div>
             </div>
@@ -102,32 +101,28 @@
         <div id="congrats-msg"></div>
     </div>
 
-    <div id="not-found" class="error-404">
-        <h2>404 Not Found</h2>
-        <p>The requested URL was not found on this server.</p>
-        <p>Additionally, a 404 Not Found error was encountered while trying to use an ErrorDocument to handle the request.</p>
-    </div>
-
     <div id="admin-ui" class="admin-box">
         <h3>管理員控制後台</h3>
         <div class="admin-controls">
             <button class="btn-start" onclick="updateStatus('started')">開始/恢復開票</button>
             <button class="btn-pause" onclick="updateStatus('paused')">暫停開票</button>
             <button class="btn-check" onclick="updateStatus('checking')">票數核對中</button>
-            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1</button>
-            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1</button>
+            <button class="btn-add" onclick="modifyVote('c1', 1)">1 號 +1 (1/ㄅ)</button>
+            <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 (2/ㄉ)</button>
             <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
-            <button class="btn-close" onclick="startShutdownProcess()">關閉網頁（倒數 30s）</button>
+            <button class="btn-close" onclick="startShutdownProcess()">關閉網頁（毀滅倒數）</button>
         </div>
 
         <div class="announcement-tool">
-            <textarea id="announcement-input" placeholder="手動發送內容..."></textarea>
+            <textarea id="announcement-input" placeholder="手動發送內容（發送後將優先顯示）..."></textarea>
             <div class="announcement-btns">
                 <button class="btn-send" onclick="sendAnnouncement()">確定發送公告</button>
                 <button style="background:#7f8c8d; color:white;" onclick="clearAnnouncement()">清除公告</button>
             </div>
         </div>
-        <button class="btn-reset" onclick="resetData()">重整數據</button>
+
+        <div class="hotkey-hint">快速操作：[1/ㄅ]、[2/ㄉ] 加票 | [Q/ㄆ]、[W/ㄊ] 減票 | [Enter] 循環狀態</div>
+        <button class="btn-reset" onclick="resetData()">重整數據（回到準備狀態）</button>
     </div>
 
     <script type="module">
@@ -147,134 +142,165 @@
         const voteRef = ref(db, 'election_2026');
         const isAdmin = window.location.search.includes('mode=admin');
 
-        if (isAdmin) document.getElementById('admin-ui').style.display = 'block';
+        let lastInputTime = 0;
+        const cooldown = 200; 
 
-        let currentData = {};
+        if (isAdmin) {
+            document.getElementById('admin-ui').style.display = 'block';
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                const now = Date.now();
+                if (now - lastInputTime < cooldown) return;
+                lastInputTime = now;
+
+                const key = e.key;
+                if (key === '1' || key === 'ㄅ') modifyVote('c1', 1);
+                if (key === '2' || key === 'ㄉ') modifyVote('c2', 1);
+                if (key === 'q' || key === 'Q' || key === 'ㄆ') modifyVote('c1', -1);
+                if (key === 'w' || key === 'W' || key === 'ㄊ') modifyVote('c2', -1);
+                
+                if (key === 'Enter') {
+                    const order = ['waiting', 'started', 'paused', 'checking', 'finished'];
+                    const nextIdx = (order.indexOf(currentData.status) + 1) % order.length;
+                    updateStatus(order[nextIdx]);
+                }
+            });
+        }
+
+        let currentData = {
+            status: "waiting",
+            c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+            c2: { name: "2 號 許維辰、李佳寧", count: 0 },
+            announcement: ""
+        };
 
         onValue(voteRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                currentData = data;
-                render(data);
-            }
-        });
+            if (!data) return;
+            currentData = data;
 
-        function render(data) {
-            // 在 render 函數的最前面加入「強制停用」邏輯 (較建議此版本)
+            // 物理級關閉檢查
             if (data.status === "disabled") {
                 document.documentElement.innerHTML = `
                     <title>404 Not Found</title>
-                    <body style="background:white; color:black; font-family:sans-serif; padding:30px;">
-                        <h1>404 Not Found</h1>
-                        <hr>
+                    <body style="background:white; color:black; font-family:sans-serif; padding:30px; text-align:left;">
+                        <h1>404 Not Found</h1><hr>
                         <address>Apache/2.4.41 (Ubuntu) Server at cssc-voting.chingshin.tp.edu.tw Port 443</address>
-                    </body>
-                `;
-                return; 
+                    </body>`;
+                return;
             }
 
-            const congratsUI = document.getElementById('congrats-msg');
-            const mainContent = document.getElementById('main-content');
-            const notFoundUI = document.getElementById('not-found');
+            render(data);
+        });
 
-            if (data.status === "closing_pre") {
-                congratsUI.innerHTML = "網頁即將於 30 秒後關閉";
-                congratsUI.style.display = "block";
-            } else if (data.status.startsWith("closing_count_")) {
-                const count = data.status.split('_')[2];
-                congratsUI.innerHTML = `<div class="countdown-number">${count}</div>`;
-                congratsUI.style.display = "block";
-            } else if (data.status === "closed_black") {
-                document.body.classList.add('is-closed');
-                congratsUI.style.display = "none";
-            } else if (data.status === "closed_404") {
-                document.body.classList.add('is-closed');
-                mainContent.style.display = "none";
-                notFoundUI.style.display = "block";
-                document.body.style.background = "#121212";
+        function render(data) {
+            const waitUI = document.getElementById('waiting-ui');
+            const countUI = document.getElementById('counting-ui');
+            const congratsUI = document.getElementById('congrats-msg');
+            const viewport = document.getElementById('app-viewport');
+
+            // 處理倒數/黑屏視覺
+            if (data.status === "closed_black") {
+                viewport.style.display = "none";
+                document.body.style.background = "black";
                 return;
             } else {
-                document.body.classList.remove('is-closed');
-                mainContent.style.display = "block";
-                notFoundUI.style.display = "none";
+                viewport.style.display = "block";
+                document.body.style.background = var(--bg-color);
             }
 
-            if (["waiting", "started", "paused", "checking", "finished"].includes(data.status)) {
-                document.getElementById('waiting-ui').style.display = data.status === "waiting" ? "block" : "none";
-                document.getElementById('counting-ui').style.display = data.status === "waiting" ? "none" : "flex";
+            // 一般狀態切換
+            if (data.status === "waiting") {
+                waitUI.style.display = "block";
+                countUI.style.display = "none";
+                congratsUI.style.display = "none";
+            } else {
+                waitUI.style.display = "none";
+                countUI.style.display = "flex";
                 
-                const v1 = data.c1.count;
-                const v2 = data.c2.count;
-                const total = v1 + v2;
-                document.getElementById('v1').innerText = v1;
-                document.getElementById('v2').innerText = v2;
-
-                const r1 = total > 0 ? ((v1 / total) * 100).toFixed(1) : "0.0";
-                const r2 = total > 0 ? ((v2 / total) * 100).toFixed(1) : "0.0";
-                document.getElementById('r1').innerText = `得票率: ${r1}%`;
-                document.getElementById('r2').innerText = `得票率: ${r2}%`;
-
-                document.getElementById('card-c1').classList.remove('is-winner');
-                document.getElementById('card-c2').classList.remove('is-winner');
+                // 計算與更新票數
+                const total = data.c1.count + data.c2.count;
+                const getRateVal = (c) => total === 0 ? 0 : (c / total);
+                const getRateStr = (c) => (getRateVal(c) * 100).toFixed(1);
                 
-                if (data.status === "finished" || data.status === "paused" || data.status === "checking") {
+                document.getElementById('v1').innerText = data.c1.count;
+                document.getElementById('v2').innerText = data.c2.count;
+                document.getElementById('r1').innerText = `得票率: ${getRateStr(data.c1.count)}%`;
+                document.getElementById('r2').innerText = `得票率: ${getRateStr(data.c2.count)}%`;
+
+                // 當選印章邏輯
+                document.getElementById('card-c1').classList.toggle('is-winner', data.status === "finished" && getRateVal(data.c1.count) > 0.5);
+                document.getElementById('card-c2').classList.toggle('is-winner', data.status === "finished" && getRateVal(data.c2.count) > 0.5);
+
+                // 公告訊息區邏輯
+                if (data.status === "closing_pre") {
+                    congratsUI.innerHTML = "網頁即將於 30 秒後關閉";
                     congratsUI.style.display = "block";
-                    if (data.status === "paused") congratsUI.innerHTML = "網頁整理中，即將恢復<br>敬請稍後";
-                    if (data.status === "checking") congratsUI.innerHTML = "票數核對中，即將公布當選人<br>敬請稍後";
-                    if (data.status === "finished") {
-                        if (v1 > v2) {
-                            document.getElementById('card-c1').classList.add('is-winner');
-                            congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選！`;
-                        } else if (v2 > v1) {
-                            document.getElementById('card-c2').classList.add('is-winner');
-                            congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選！`;
-                        } else {
-                            congratsUI.innerHTML = "開票結束：雙方得票相同或未過半";
-                        }
-                    }
+                } else if (data.status.startsWith("closing_count_")) {
+                    const count = data.status.split('_')[2];
+                    congratsUI.innerHTML = `<div class="countdown-number">${count}</div>`;
+                    congratsUI.style.display = "block";
+                } else if (data.announcement && data.announcement.trim() !== "") {
+                    congratsUI.innerText = data.announcement;
+                    congratsUI.style.display = "block";
+                } else if (data.status === "paused") {
+                    congratsUI.innerHTML = `網頁整理中，即將恢復<br>敬請稍後`;
+                    congratsUI.style.display = "block";
+                } else if (data.status === "checking") {
+                    congratsUI.innerHTML = `票數核對中，即將公布當選人<br>敬請稍後`;
+                    congratsUI.style.display = "block";
+                } else if (data.status === "finished") {
+                    const c1Passed = getRateVal(data.c1.count) > 0.5;
+                    const c2Passed = getRateVal(data.c2.count) > 0.5;
+                    if (c1Passed) congratsUI.innerHTML = `恭喜 <span>${data.c1.name}</span> 當選！`;
+                    else if (c2Passed) congratsUI.innerHTML = `恭喜 <span>${data.c2.name}</span> 當選！`;
+                    else congratsUI.innerHTML = `開票結束，雙方皆未過半<br>請靜待選委會說明`;
+                    congratsUI.style.display = "block";
                 } else {
                     congratsUI.style.display = "none";
                 }
             }
         }
 
+        window.updateStatus = (s) => update(voteRef, { status: s });
+        
+        window.modifyVote = (id, amount) => {
+            if (currentData.status !== "started") return;
+            let nc = currentData[id].count + amount;
+            update(voteRef, { [id]: { ...currentData[id], count: nc < 0 ? 0 : nc } });
+        };
+
+        window.sendAnnouncement = () => {
+            const content = document.getElementById('announcement-input').value;
+            if (content.trim() === "") return alert("請輸入內容");
+            update(voteRef, { announcement: content });
+        };
+
+        window.clearAnnouncement = () => {
+            document.getElementById('announcement-input').value = "";
+            update(voteRef, { announcement: "" });
+        };
+
         window.startShutdownProcess = async () => {
-            if(!confirm("確定要啟動倒數關閉程序？這將使網頁徹底失效！")) return;
-            
-            // 1. 預告 5 秒
+            if(!confirm("確定要啟動倒數關閉程序？這將使網頁永久失效！")) return;
             update(voteRef, { status: "closing_pre" });
             await new Promise(r => setTimeout(r, 5000));
-
-            // 2. 倒數 30 秒
             for (let i = 30; i >= 0; i--) {
                 update(voteRef, { status: `closing_count_${i}` });
                 await new Promise(r => setTimeout(r, 1000));
             }
-
-            // 3. 全黑 2 秒 (過場)
             update(voteRef, { status: "closed_black" });
-            await new Promise(r => setTimeout(r, 2000));
-
-            // 4. 最終鎖定狀態：設為 disabled (較建議此版本)
+            await new Promise(r => setTimeout(r, 5000));
             update(voteRef, { status: "disabled" });
         };
 
-        window.updateStatus = (s) => update(voteRef, { status: s });
-        window.modifyVote = (id, amount) => {
-            let newCount = (currentData[id] ? currentData[id].count : 0) + amount;
-            update(voteRef, { [id]: { ...currentData[id], count: newCount < 0 ? 0 : newCount } });
-        };
-        window.sendAnnouncement = () => update(voteRef, { announcement: document.getElementById('announcement-input').value });
-        window.clearAnnouncement = () => update(voteRef, { announcement: "" });
         window.resetData = () => {
-            if(confirm("重置所有開票數據？")) {
-                set(voteRef, { 
-                    status: "waiting", 
-                    c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 }, 
-                    c2: { name: "2 號 許維辰、李佳寧", count: 0 }, 
-                    announcement: "" 
-                });
-            }
+            if (confirm("重置？")) set(voteRef, {
+                status: "waiting",
+                c1: { name: "1 號 陳瑞婕、郭芸妘", count: 0 },
+                c2: { name: "2 號 許維辰、李佳寧", count: 0 },
+                announcement: ""
+            });
         };
     </script>
 </body>
