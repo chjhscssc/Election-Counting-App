@@ -8,83 +8,49 @@
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #f1c40f; --accent: #e74c3c; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg-color); color: white; text-align: center; margin: 0; padding: 20px; transition: background 0.5s; }
         
-        body.is-closed { background: black !important; }
+        /* ⬇️ 新增：免重整 404 遮罩樣式，完全不影響原有的 body 樣式 */
+        #closed-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            color: white;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+        }
+        body.is-closed #closed-overlay { display: flex; }
         body.is-closed #waiting-ui, 
         body.is-closed #counting-ui, 
         body.is-closed #congrats-msg,
         body.is-closed h1 { display: none !important; }
 
         h1 { margin-bottom: 40px; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 1.8em; line-height: 1.4; }
-        
         .status-container { font-size: 2em; margin-top: 150px; color: #aaa; font-weight: bold; }
-        
         .container { display: none; justify-content: center; flex-wrap: wrap; gap: 30px; margin-top: 30px; }
         .card { background: var(--card-bg); border: 2px solid #333; border-radius: 20px; width: 340px; padding: 40px 20px; transition: 0.3s; position: relative; }
-        
         .name { font-size: 1.8em; font-weight: bold; margin-bottom: 15px; }
-        
-        .votes-container {
-            display: inline-block;
-            position: relative; 
-            margin: 10px 0;
-            line-height: 1;
-        }
+        .votes-container { display: inline-block; position: relative; margin: 10px 0; line-height: 1; }
         .votes { font-size: 5em; font-weight: 900; color: var(--primary); }
-        
-        .vote-unit {
-            font-size: 2.2em; 
-            color: var(--primary); 
-            margin-left: 8px;
-            font-weight: bold;
-            vertical-align: baseline;
-            opacity: 0.9;
-        }
-
+        .vote-unit { font-size: 2.2em; color: var(--primary); margin-left: 8px; font-weight: bold; vertical-align: baseline; opacity: 0.9; }
         .rate { font-size: 1.5em; color: #888; margin-top: 10px; }
-        
-        .winner-stamp { 
-            display: none; 
-            position: absolute; 
-            bottom: -12px;   
-            right: -28px;    
-            width: 75px;     
-            height: 75px;
-            z-index: 10;
-            pointer-events: none;
-            transform: rotate(-15deg);
-        }
+        .winner-stamp { display: none; position: absolute; bottom: -12px; right: -28px; width: 75px; height: 75px; z-index: 10; pointer-events: none; transform: rotate(-15deg); }
         .is-winner .winner-stamp { display: block; animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        @keyframes stampIn {
-            from { transform: scale(3) rotate(-45deg); opacity: 0; }
-            to { transform: scale(1) rotate(-15deg); opacity: 1; }
-        }
+        @keyframes stampIn { from { transform: scale(3) rotate(-45deg); opacity: 0; } to { transform: scale(1) rotate(-15deg); opacity: 1; } }
 
         #congrats-msg {
-            display: none;
-            margin: 40px auto;
-            max-width: 800px;
-            font-size: 1.8em;
-            color: #f1c40f;
-            line-height: 1.6;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.85); /* 增加黑色背景確保文字可讀 */
-            padding: 30px;
-            border-radius: 15px;
-            border: 2px dashed #f1c40f;
-            white-space: pre-line;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            display: none; margin: 40px auto; max-width: 800px; font-size: 1.8em; color: #f1c40f; line-height: 1.6; font-weight: bold;
+            background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 15px; border: 2px dashed #f1c40f; white-space: pre-line; box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-
         #congrats-msg span { color: white; } 
 
-        .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; position: relative; z-index: 999; }
+        .admin-box { display: none; background: #2c3e50; padding: 30px; margin-top: 50px; border-radius: 15px; border: 1px solid #34495e; position: relative; z-index: 10000; }
         .admin-controls { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-        
         .announcement-tool { margin-top: 30px; padding-top: 20px; border-top: 1px solid #455a64; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         #announcement-input { width: 80%; max-width: 500px; height: 80px; padding: 10px; border-radius: 8px; border: none; font-size: 16px; background: #ecf0f1; color: #2c3e50; font-family: inherit; }
         .announcement-btns { display: flex; gap: 10px; }
-
         .hotkey-hint { color: #bdc3c7; font-size: 0.9em; margin-top: 10px; }
         button { padding: 12px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
         .btn-start { background: #27ae60; color: white; }
@@ -93,12 +59,20 @@
         .btn-add { background: #3498db; color: white; }
         .btn-end { background: #c0392b; color: white; }
         .btn-close { background: #000; color: #f1c40f; border: 1px solid #f1c40f; }
+        .btn-restore { background: #2980b9; color: white; } /* ⬅️ 恢復按鈕顏色 */
         .btn-send { background: #9b59b6; color: white; }
         .btn-reset { background: #7f8c8d; color: white; margin-top: 20px; }
         button:hover { opacity: 0.8; transform: scale(1.05); }
     </style>
 </head>
 <body>
+
+    <div id="closed-overlay">
+        <div style="text-align:center;">
+            <h1 style="font-size:2em; border-right:1px solid white; padding:10px 20px; display:inline-block; margin:0; vertical-align:middle; text-shadow:none;">404</h1>
+            <span style="display:inline-block; padding:10px 20px; vertical-align:middle;">This page could not be found.</span>
+        </div>
+    </div>
 
     <h1>臺北市私立靜心高級中學<br>第七屆學生會正副會長選舉開票系統</h1>
 
@@ -137,7 +111,7 @@
             <button class="btn-add" onclick="modifyVote('c2', 1)">2 號 +1 (2/ㄉ)</button>
             <button class="btn-end" onclick="updateStatus('finished')">結束開票</button>
             <button class="btn-close" onclick="updateStatus('closed')">關閉網頁（全黑）</button>
-        </div>
+            <button class="btn-restore" onclick="updateStatus('waiting')">恢復頁面（解除全黑）</button> </div>
 
         <div class="announcement-tool">
             <textarea id="announcement-input" placeholder="手動發送內容..."></textarea>
@@ -216,23 +190,18 @@
             const countUI = document.getElementById('counting-ui');
             const congratsUI = document.getElementById('congrats-msg');
             
+            // ⬇️ 修改：針對 closed 狀態的渲染邏輯（免重整版本）
             if (data.status === "closed") {
-                // 如果不是管理員模式，顯示 404 並清空內容（較建議此版本）
-                if (!isAdmin) {
-                    document.documentElement.innerHTML = `
-                        <head><title>404 Not Found</title></head>
-                        <body style="background:black; color:white; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
-                            <div style="text-align:center;">
-                                <h1 style="font-size:2em; border-right:1px solid white; padding:10px 20px; display:inline-block; margin:0; vertical-align:middle;">404</h1>
-                                <span style="display:inline-block; padding:10px 20px; vertical-align:middle;">This page could not be found.</span>
-                            </div>
-                        </body>`;
-                    return;
-                }
                 document.body.classList.add('is-closed');
+                if (isAdmin) {
+                    document.getElementById('closed-overlay').style.display = "none";
+                } else {
+                    document.getElementById('closed-overlay').style.display = "flex";
+                }
                 return;
             } else {
                 document.body.classList.remove('is-closed');
+                document.getElementById('closed-overlay').style.display = "none";
             }
             
             if (data.status === "waiting") {
@@ -255,7 +224,6 @@
                 document.getElementById('card-c1').classList.remove('is-winner');
                 document.getElementById('card-c2').classList.remove('is-winner');
 
-                // 訊息區顯示判斷
                 if (data.announcement && data.announcement.trim() !== "") {
                     congratsUI.innerText = data.announcement;
                     congratsUI.style.display = "block";
